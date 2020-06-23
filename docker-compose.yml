@@ -1,0 +1,80 @@
+version: "3"
+
+services:
+
+  plex:
+    container_name: plex
+    image: linuxserver/plex
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - TZ=America/New_York
+      - PUID=1000
+      - PGID=1000
+    hostname: plex
+    volumes:
+      - /home/docker/transmission/plex/config:/config
+      - /home/woozie/private/nfs/media/TVShows:/tv
+      - /home/woozie/private/nfs/media/Movies:/movies
+    ports:
+      - 32400:32400
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    depends_on:
+      - transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/new_york
+      - UMASK_SET=022 #optional
+    volumes:
+      - /home/docker/sonarr/config:/config
+      - /home/woozie/private/nfs/Downloads:/downloads
+      - /home/woozie/private/nfs/media/TVShows:/tv
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+    network_mode: host
+
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    depends_on:
+      - transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/new_york
+      - UMASK_SET=022
+    volumes:
+      - /home/docker/radarr/config:/config
+      - /home/woozie/private/nfs/media/Movies:/movies
+      - /home/woozie/private/nfs/Downloads:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+    network_mode: host
+  
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/new_york
+      - USER=transmission #optional
+      - PASS=transmission #optional
+    volumes:
+      - /home/docker/transmission/config:/config
+      - $HOME/private/nfs/Downloads:/downloads
+      - $HOME/private/nfs/watch:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+    network_mode: host
+
+
